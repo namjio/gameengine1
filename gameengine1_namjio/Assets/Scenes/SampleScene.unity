@@ -224,7 +224,7 @@ Animator:
   m_Controller: {fileID: 9100000, guid: 821221438650ff3418c3df97d9c9ccc8, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
-  m_ApplyRootMotion: 0
+  m_ApplyRootMotion: 1
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
@@ -1494,7 +1494,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 16.875
+  orthographic size: 15
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
