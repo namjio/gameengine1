@@ -3,7 +3,7 @@ using UnityEngine;
 public class HelloUnity : MonoBehaviour
 {
     // 변수 선언 (데이터를 담을 상자 만들기)
-    private string playerName = "김철수";
+    private string playerName = "";
     public int playerLevel = 1;
     public float walkSpeed = 5.0f;
     public bool canFly = false;

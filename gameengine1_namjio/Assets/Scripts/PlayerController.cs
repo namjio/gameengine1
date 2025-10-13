@@ -8,96 +8,80 @@ public class PlayerController : MonoBehaviour
     [Header("점프 설정")]
     public float jumpForce = 10.0f;
 
-    // Animator 컴포넌트 참조 (private - Inspector에 안 보임)
     private Animator animator;
-
     private Rigidbody2D rb;
-    private bool isGrounded = false; // 바닥에 닿아있는지 여부
+    private SpriteRenderer spriteRenderer; 
+    
+    private int score = 0; 
+    private bool isGrounded = false; 
+
+    private float horizontalInput = 0f; // FixedUpdate에서 사용할 입력 값 저장
 
     void Start()
     {
-        // Animator 컴포넌트 찾기
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
-
-        // 디버그: Animator가 제대로 연결되었는지 확인
-        if (animator != null)
-        {
-            Debug.Log("Animator 컴포넌트를 찾았습니다!");
-        }
-        else
-        {
-            Debug.LogError("Animator 컴포넌트가 없습니다!");
-        }
-
-        // 디버그: Rigidbody2D가 제대로 연결되었는지 확인
-        if (rb == null)
-        {
-            Debug.LogError("Rigidbody2D가 없습니다! Player에 추가하세요.");
-        }
+        spriteRenderer = GetComponent<SpriteRenderer>(); 
     }
 
     void Update()
     {
-        // 좌우 이동
-        float moveX = 0f;
+        // 1. 입력 감지 및 애니메이션/방향 처리 (이전과 동일)
+        horizontalInput = Input.GetAxisRaw("Horizontal"); 
 
-        if (Input.GetKey(KeyCode.A))
+        if (horizontalInput != 0)
         {
-            moveX += 1f;  // 왼쪽으로 이동
-        }
-        else if (Input.GetKey(KeyCode.D))
-        {
-            moveX -= 1f;   // 오른쪽으로 이동
-        }
-
-        // 이동 적용: Rigidbody2D를 사용해 물리적으로 이동
-        rb.linearVelocity = new Vector2(moveX * moveSpeed, rb.linearVelocity.y);
-
-        // 애니메이션 처리
-        if (moveX != 0)
-        {
-            // 이동 중이면 "Run" 애니메이션 활성화
-            animator.SetFloat("Speed", Mathf.Abs(moveX));
-            
-            // 방향 전환 (스프라이트 좌우 반전)
-            if (moveX < 0)
-            {
-                transform.localScale = new Vector3(-1, 1, 1); // 왼쪽으로 갈 때
-            }
-            else if (moveX > 0)
-            {
-                transform.localScale = new Vector3(1, 1, 1);  // 오른쪽으로 갈 때
-            }
+            animator.SetFloat("Speed", Mathf.Abs(horizontalInput));
+            spriteRenderer.flipX = (horizontalInput < 0);
         }
         else
         {
-            // 이동하지 않으면 "Idle" 애니메이션 (속도 0)
             animator.SetFloat("Speed", 0);
         }
 
-        // 점프 입력 감지
+        // 2. 🟢 점프 입력 및 적용 (Update에서 처리)
+        // 작동하던 점프 코드를 그대로 사용합니다.
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
-            // 점프 애니메이션 실행
+            // Y축 속도에 jumpForce를 부여합니다.
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
             animator.SetBool("Jump", true);
-            Debug.Log("점프!");
         }
     }
-
-    // 바닥에 닿았을 때 (충돌 시작)
+    
+    // 📢 FixedUpdate: X축 이동만 처리 (Y축 속도 보호)
+    void FixedUpdate()
+    {
+        // X축 이동 명령을 FixedUpdate에 배치하여 물리 엔진과 동기화합니다.
+        // 이 코드는 현재 Y축 속도(점프 중이거나 낙하 중인 속도)를 그대로 유지합니다.
+        rb.linearVelocity = new Vector2(horizontalInput * moveSpeed, rb.linearVelocity.y);
+    }
+    
+    // ... (OnCollisionEnter2D, OnCollisionExit2D, OnTriggerEnter2D는 그대로 유지)
     void OnCollisionEnter2D(Collision2D collision)
     {
-        Debug.Log("충돌 시작: " + collision.gameObject.name);
-        isGrounded = true;
-        animator.SetBool("Jump", false);  // 점프 상태가 아니면 "Jump" 애니메이션을 종료
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            isGrounded = true;
+            animator.SetBool("Jump", false);
+        }
     }
-
-    // 바닥에서 떨어졌을 때 (충돌 종료)
+    
     void OnCollisionExit2D(Collision2D collision)
     {
-        Debug.Log("충돌 종료: " + collision.gameObject.name);
-        isGrounded = false;
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            isGrounded = false;
+        }
+    }
+    
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Coin"))
+        {
+            score++;  
+            Debug.Log("코인 획득! 현재 점수: " + score);
+            Destroy(other.gameObject);  
+        }
     }
 }
