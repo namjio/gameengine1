@@ -65,7 +65,9 @@ public class PlayerController : MonoBehaviour
             isGrounded = true;
             animator.SetBool("Jump", false);
         }
+        
     }
+    
     
     void OnCollisionExit2D(Collision2D collision)
     {
@@ -74,14 +76,28 @@ public class PlayerController : MonoBehaviour
             isGrounded = false;
         }
     }
-    
+
     void OnTriggerEnter2D(Collider2D other)
     {
+        // 코인 수집 (기존)
         if (other.CompareTag("Coin"))
         {
-            score++;  
-            Debug.Log("코인 획득! 현재 점수: " + score);
-            Destroy(other.gameObject);  
+            GameManager gameManager = FindObjectOfType<GameManager>();
+            if (gameManager != null)
+            {
+                gameManager.AddScore(10);
+            }
+            Destroy(other.gameObject);
+        }
+        // 골 도달 - 새로 추가!
+        if (other.CompareTag("Goal"))
+        {
+            Debug.Log("🎉 Goal Reached!");
+            GameManager gameManager = FindObjectOfType<GameManager>();
+            if (gameManager != null)
+            {
+                gameManager.GameClear();  // 게임 클리어 함수 호출
+            }
         }
     }
 }
